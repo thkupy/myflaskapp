@@ -5,7 +5,7 @@ This app follows the flask quick start guide
 '''
 
 # -- IMPORTS
-from flask import Flask, request, url_for
+from flask import Flask, request, url_for, render_template
 from markupsafe import escape
 
 # -- GLOBALS
@@ -32,17 +32,18 @@ def hello():
 def show_post(post_id):
     return f"Post {post_id}"
 
-@app.route('/login')
-def login():
-    return 'login'
-
 @app.route('/user/<username>')
 def profile(username):
     return f'{username}\'s profile'
 
+@app.route('/tach/')
+@app.route('/tach/<name>')
+def tach(name=None):
+    return render_template('tach.html', person=name)
+
 # -- LOGIC
-with app.test_request_context():
-    print(url_for('helloworld'))
-    print(url_for('login'))
-    print(url_for('login', next='/'))
-    print(url_for('profile', username='John Doe'))
+#with app.test_request_context():
+#    print(url_for('helloworld'))
+#    print(url_for('login'))
+#    print(url_for('login', next='/'))
+#    print(url_for('profile', username='John Doe'))
