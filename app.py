@@ -5,7 +5,7 @@ This app follows the flask quick start guide
 '''
 
 # IMPORTS
-from flask import Flask
+from flask import Flask, request
 from markupsafe import escape
 
 # GLOBALS
