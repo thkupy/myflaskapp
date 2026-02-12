@@ -12,9 +12,18 @@
         
         {% endblock %}
     </div>
+    <div id="gohome">
+      {% block gohome %}
+      <hr>
+      <p>
+        <a href="{{ url_for('index') }}">go back</a><br>
+      </p>
+      {% endblock %}
+    </div>
     <div id="footer">
       {% block footer %}
-      &copy; Copyright 2026by <a href="http://domain.invalid/">you</a>.
+      <hr>
+      &copy; Copyright 2026, page by <a href="http://domain.invalid/">you</a>.
       {% endblock %}
     </div>
   </body>
