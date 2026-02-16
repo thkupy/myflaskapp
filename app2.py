@@ -24,3 +24,11 @@ def about():
 @app.route('/image')
 def image():
     return render_template("image.html")
+
+@app.route('/putdata')
+def putdata():
+    return render_template("putdata.html")
+
+@app.route('/getdata')
+def getdata():
+    return render_template("getdata.html")
