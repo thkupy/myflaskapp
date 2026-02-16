@@ -3,8 +3,8 @@
 {% block content %}
   <h1 class="pt-5 pb-2">INVOICES</h1>
   <p class="lead alert alert-warning">This is a list of all the invoices in our inventory.</p>
-  <div class="table-responsive">
-  <table class="table table-striped">
+  
+  <table id="invoices" class="table table-striped">
   <thead>
     <tr>
     <th scope="col">N</th>
@@ -32,5 +32,11 @@
   {% endfor %}
   </tbody>
   </table>
-  </div>
+  {% block scripts %}
+  <script>
+    $(document).ready(function () {
+      $('#invoices').DataTable();
+    });
+  </script>
+  {% endblock %}
 {% endblock %}
