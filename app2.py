@@ -7,18 +7,33 @@ This app deals with jinja templates mostly
 # -- IMPORTS
 from hashlib import sha256
 from datetime import datetime, timedelta
+import os
+
 from flask import Flask, url_for, render_template, redirect
 from flask_bootstrap import Bootstrap5
+
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.sql import text
 
 from flask_wtf import FlaskForm, CSRFProtect
 from wtforms import StringField, SubmitField, BooleanField, DecimalField, DateField
 from wtforms.validators import DataRequired, Length
 
 # -- GLOBALS
+db = SQLAlchemy()
 app = Flask(__name__)
 app.secret_key = '?kndeu8n3nw9e9e8dn3983e!'
+
 bootstrap = Bootstrap5(app) # init bootstrap
+
 csrf = CSRFProtect(app) # for WTF
+
+db_name = 'invoices.db'
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+db_path = os.path.join(BASE_DIR, db_name)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + db_path
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
+db.init_app(app)
 
 # -- Classes
 class DataEntryForm(FlaskForm):
@@ -32,6 +47,16 @@ class DataEntryForm(FlaskForm):
     inv_paydate = DateField('Invoice Payment Target', format="%Y-%m-%d", default=def_target, validators=[DataRequired()])
     
     submit = SubmitField('Submit')
+
+class Invoices(db.Model):
+    __tablename__ = 'invoices'
+    N = db.Column(db.Integer, primary_key=True)
+    HASH = db.Column(db.String)
+    DATE = db.Column(db.String)
+    ID = db.Column(db.String)
+    NAME = db.Column(db.String)
+    VALUE = db.Column(db.String)
+    PAYDATE = db.Column(db.String)
 
 # -- Routes
 @app.route('/')
@@ -66,4 +91,15 @@ def putdata():
 
 @app.route('/getdata')
 def getdata():
-    return render_template("getdata.html")
+    try:
+        invoices = db.session.execute(db.select(Invoices).order_by(Invoices.N)).scalars()
+        invoice_text = '<ul>'
+        for invoice in invoices:
+            invoice_text += '<li>' + invoice.DATE + ', ' + invoice.ID + ', ' + invoice.NAME + ', ' + invoice.VALUE + ', ' + invoice.PAYDATE + '</li>'
+        invoice_text += '</ul>'
+        return invoice_text
+    except Exception as e:
+        error_text = "<p>The error:<br>" + str(e) + "</p>"
+        hed = '<h1>Something is broken.</h1>'
+        return hed + error_text
+    #return render_template("getdata.html")
