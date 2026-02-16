@@ -6,6 +6,7 @@
   <table class="table">
   <tr>
     <th>N</th>
+    <th>Patient</th>
     <th>In-Date</th>
     <th>ID</th>
     <th>Name</th>
@@ -17,6 +18,7 @@
   {% for invoice in invoices %}
   <tr>
     <td>{{ invoice.N }}</td>
+    <td>{{ invoice.PATIENT }}</td>
     <td>{{ invoice.DATE }}</td>
     <td>{{ invoice.ID }}</td>
     <td>{{ invoice.NAME }}</td>

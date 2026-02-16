@@ -16,7 +16,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.sql import text
 
 from flask_wtf import FlaskForm, CSRFProtect
-from wtforms import StringField, SubmitField, BooleanField, DecimalField, DateField
+from wtforms import StringField, SubmitField, SelectField, DateField
 from wtforms.validators import DataRequired, Length
 
 # -- GLOBALS
@@ -40,12 +40,20 @@ class DataEntryForm(FlaskForm):
     def_today = datetime.today()
     def_target = datetime.today() + timedelta(days=14)
 
-    inv_date = DateField('Invoice Date', format="%Y-%m-%d", default=def_today, validators=[DataRequired()])
+    inv_patient = SelectField('Invoice Patient',
+                              choices=['Annika','Thomas','Luise','Janusz','Clemens'],
+                              validators=[DataRequired()])
+    inv_date = DateField('Invoice Date', 
+                         format="%Y-%m-%d",
+                         default=def_today,
+                         validators=[DataRequired()])
     inv_id = StringField('Invoice ID', validators=[DataRequired()])
     inv_name = StringField('Invoice Name', validators=[DataRequired()])
     inv_value = StringField('Invoice Value', validators=[DataRequired()])
-    inv_paydate = DateField('Invoice Payment Target', format="%Y-%m-%d", default=def_target, validators=[DataRequired()])
-    
+    inv_paydate = DateField('Invoice Payment Target',
+                            format="%Y-%m-%d",
+                            default=def_target,
+                            validators=[DataRequired()])
     submit = SubmitField('Submit')
 
 class Invoices(db.Model):
@@ -57,6 +65,16 @@ class Invoices(db.Model):
     NAME = db.Column(db.String)
     VALUE = db.Column(db.String)
     PAYDATE = db.Column(db.String)
+    PATIENT = db.Column(db.String)
+    def __init__(self, N, HASH, DATE, ID, NAME, VALUE, PAYDATE, PATIENT):
+        self.N = N
+        self.HASH = HASH
+        self.DATE = DATE
+        self.ID = ID
+        self.NAME = NAME
+        self.VALUE = VALUE
+        self.PAYDATE = PAYDATE
+        self.PATIENT = PATIENT
 
 # -- Routes
 @app.route('/')
@@ -75,6 +93,7 @@ def image():
 def putdata():
     form = DataEntryForm()
     if form.validate_on_submit():
+        inv_patient = form.inv_patient.data
         inv_date = form.inv_date.data
         inv_id = form.inv_id.data
         inv_name = form.inv_name.data
@@ -84,7 +103,7 @@ def putdata():
         rawhash.update(str(inv_date).encode('utf8'))
         entry_hash = rawhash.hexdigest()
         print("----")
-        print(entry_hash[0:11], ": ", inv_date, inv_id, inv_name, inv_value, inv_paydate)
+        print(entry_hash[0:11], ": ", inv_patient, inv_date, inv_id, inv_name, inv_value, inv_paydate)
         print("----")
         return redirect( url_for('getdata') )
     return render_template("putdata.html", form=form, message="")
