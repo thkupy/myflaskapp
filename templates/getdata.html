@@ -3,18 +3,21 @@
 {% block content %}
   <h1 class="pt-5 pb-2">INVOICES</h1>
   <p class="lead alert alert-warning">This is a list of all the invoices in our inventory.</p>
-  <table class="table">
-  <tr>
-    <th>N</th>
-    <th>Patient</th>
-    <th>In-Date</th>
-    <th>ID</th>
-    <th>Name</th>
-    <th>Value</th>
-    <th>Pay-Date</th>
-    <th>Hash</th>
-  </tr>
-
+  <div class="table-responsive">
+  <table class="table table-striped">
+  <thead>
+    <tr>
+    <th scope="col">N</th>
+    <th scope="col">Patient</th>
+    <th scope="col">In-Date</th>
+    <th scope="col">ID</th>
+    <th scope="col">Name</th>
+    <th scope="col">Value</th>
+    <th scope="col">Pay-Date</th>
+    <th scope="col">Hash</th>
+    </tr>
+  </thead>
+  <tbody>
   {% for invoice in invoices %}
   <tr>
     <td>{{ invoice.N }}</td>
@@ -27,5 +30,7 @@
     <td>{{ invoice.HASH }}</td>
   </tr>
   {% endfor %}
+  </tbody>
   </table>
+  </div>
 {% endblock %}

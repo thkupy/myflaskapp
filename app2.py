@@ -9,7 +9,7 @@ from hashlib import sha256
 from datetime import datetime, timedelta
 import os
 
-from flask import Flask, url_for, render_template, redirect
+from flask import Flask, url_for, render_template, redirect, request
 from flask_bootstrap import Bootstrap5
 
 from flask_sqlalchemy import SQLAlchemy
@@ -66,8 +66,8 @@ class Invoices(db.Model):
     VALUE = db.Column(db.String)
     PAYDATE = db.Column(db.String)
     PATIENT = db.Column(db.String)
-    def __init__(self, N, HASH, DATE, ID, NAME, VALUE, PAYDATE, PATIENT):
-        self.N = N
+    def __init__(self, HASH, DATE, ID, NAME, VALUE, PAYDATE, PATIENT):
+        #self.N = N
         self.HASH = HASH
         self.DATE = DATE
         self.ID = ID
@@ -91,22 +91,35 @@ def image():
 
 @app.route('/putdata', methods=['GET', 'POST'])
 def putdata():
+    message = ""
     form = DataEntryForm()
     if form.validate_on_submit():
-        inv_patient = form.inv_patient.data
-        inv_date = form.inv_date.data
-        inv_id = form.inv_id.data
-        inv_name = form.inv_name.data
-        inv_value = form.inv_value.data
-        inv_paydate = form.inv_paydate.data
+        inv_patient = request.form['inv_patient']
+        inv_date = request.form['inv_date']
+        inv_id = request.form['inv_id']
+        inv_name = request.form['inv_name']
+        inv_value = request.form['inv_value']
+        inv_paydate = request.form['inv_paydate']
         rawhash = sha256()
         rawhash.update(str(inv_date).encode('utf8'))
+        rawhash.update(str(inv_patient).encode('utf8'))
+        rawhash.update(str(inv_id).encode('utf8'))
+        rawhash.update(str(inv_name).encode('utf8'))
+        rawhash.update(str(inv_value).encode('utf8'))
+        rawhash.update(str(inv_paydate).encode('utf8'))
         entry_hash = rawhash.hexdigest()
-        print("----")
-        print(entry_hash[0:11], ": ", inv_patient, inv_date, inv_id, inv_name, inv_value, inv_paydate)
-        print("----")
-        return redirect( url_for('getdata') )
-    return render_template("putdata.html", form=form, message="")
+        record = Invoices(entry_hash[0:11],
+                          inv_date,
+                          inv_id,
+                          inv_name,
+                          inv_value,
+                          inv_paydate,
+                          inv_patient)#HASH, DATE, ID, NAME, VALUE, PAYDATE, PATIENT)
+        db.session.add(record)
+        db.session.commit()
+        # create a message to send to the template
+        message = f"NEW DATA has been submitted."
+    return render_template("putdata.html", form=form, message=message)
 
 @app.route('/getdata')
 def getdata():
