@@ -91,15 +91,5 @@ def putdata():
 
 @app.route('/getdata')
 def getdata():
-    try:
-        invoices = db.session.execute(db.select(Invoices).order_by(Invoices.N)).scalars()
-        invoice_text = '<ul>'
-        for invoice in invoices:
-            invoice_text += '<li>' + invoice.DATE + ', ' + invoice.ID + ', ' + invoice.NAME + ', ' + invoice.VALUE + ', ' + invoice.PAYDATE + '</li>'
-        invoice_text += '</ul>'
-        return invoice_text
-    except Exception as e:
-        error_text = "<p>The error:<br>" + str(e) + "</p>"
-        hed = '<h1>Something is broken.</h1>'
-        return hed + error_text
-    #return render_template("getdata.html")
+    invoices = db.session.execute(db.select(Invoices).order_by(Invoices.N)).scalars()
+    return render_template("getdata.html", invoices=invoices)

@@ -1,6 +1,29 @@
 {% extends "baselayout.html" %}
 {% block title %}GETDATA{% endblock %}
 {% block content %}
-  <h1>Getdata</h1>
-  <p>placeholder</p>
+  <h1 class="pt-5 pb-2">INVOICES</h1>
+  <p class="lead alert alert-warning">This is a list of all the invoices in our inventory.</p>
+  <table class="table">
+  <tr>
+    <th>N</th>
+    <th>In-Date</th>
+    <th>ID</th>
+    <th>Name</th>
+    <th>Value</th>
+    <th>Pay-Date</th>
+    <th>Hash</th>
+  </tr>
+
+  {% for invoice in invoices %}
+  <tr>
+    <td>{{ invoice.N }}</td>
+    <td>{{ invoice.DATE }}</td>
+    <td>{{ invoice.ID }}</td>
+    <td>{{ invoice.NAME }}</td>
+    <td>{{ invoice.VALUE }}</td>
+    <td>{{ invoice.PAYDATE }}</td>
+    <td>{{ invoice.HASH }}</td>
+  </tr>
+  {% endfor %}
+  </table>
 {% endblock %}
