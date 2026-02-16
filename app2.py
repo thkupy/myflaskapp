@@ -5,12 +5,33 @@ This app deals with jinja templates mostly
 '''
 
 # -- IMPORTS
-from flask import Flask, url_for, render_template
+from hashlib import sha256
+from datetime import datetime, timedelta
+from flask import Flask, url_for, render_template, redirect
 from flask_bootstrap import Bootstrap5
+
+from flask_wtf import FlaskForm, CSRFProtect
+from wtforms import StringField, SubmitField, BooleanField, DecimalField, DateField
+from wtforms.validators import DataRequired, Length
 
 # -- GLOBALS
 app = Flask(__name__)
-bootstrap = Bootstrap5(app)
+app.secret_key = '?kndeu8n3nw9e9e8dn3983e!'
+bootstrap = Bootstrap5(app) # init bootstrap
+csrf = CSRFProtect(app) # for WTF
+
+# -- Classes
+class DataEntryForm(FlaskForm):
+    def_today = datetime.today()
+    def_target = datetime.today() + timedelta(days=14)
+
+    inv_date = DateField('Invoice Date', format="%Y-%m-%d", default=def_today, validators=[DataRequired()])
+    inv_id = StringField('Invoice ID', validators=[DataRequired()])
+    inv_name = StringField('Invoice Name', validators=[DataRequired()])
+    inv_value = StringField('Invoice Value', validators=[DataRequired()])
+    inv_paydate = DateField('Invoice Payment Target', format="%Y-%m-%d", default=def_target, validators=[DataRequired()])
+    
+    submit = SubmitField('Submit')
 
 # -- Routes
 @app.route('/')
@@ -25,9 +46,23 @@ def about():
 def image():
     return render_template("image.html")
 
-@app.route('/putdata')
+@app.route('/putdata', methods=['GET', 'POST'])
 def putdata():
-    return render_template("putdata.html")
+    form = DataEntryForm()
+    if form.validate_on_submit():
+        inv_date = form.inv_date.data
+        inv_id = form.inv_id.data
+        inv_name = form.inv_name.data
+        inv_value = form.inv_value.data
+        inv_paydate = form.inv_paydate.data
+        rawhash = sha256()
+        rawhash.update(str(inv_date).encode('utf8'))
+        entry_hash = rawhash.hexdigest()
+        print("----")
+        print(entry_hash[0:11], ": ", inv_date, inv_id, inv_name, inv_value, inv_paydate)
+        print("----")
+        return redirect( url_for('getdata') )
+    return render_template("putdata.html", form=form, message="")
 
 @app.route('/getdata')
 def getdata():

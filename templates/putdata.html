@@ -1,6 +1,17 @@
 {% extends "baselayout.html" %}
+{% from 'bootstrap5/form.html' import render_form %}
 {% block title %}PUTDATA{% endblock %}
 {% block content %}
   <h1>PUTDATA</h1>
-  <p>placeholder</p>
+  <div class="container">
+  <div class="row">
+    <div class="col-md-10 col-lg-8 mx-lg-auto mx-md-auto">
+
+      {{ render_form(form) }}
+
+      <p class="pt-5"><strong>{{ message }}</strong></p>
+
+    </div>
+  </div>
+</div>
 {% endblock %}
