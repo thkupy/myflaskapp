@@ -14,9 +14,10 @@ from flask_bootstrap import Bootstrap5
 
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.sql import text
+from sqlalchemy import update
 
 from flask_wtf import FlaskForm, CSRFProtect
-from wtforms import StringField, SubmitField, SelectField, DateField
+from wtforms import StringField, SubmitField, SelectField, DateField, BooleanField,RadioField
 from wtforms.validators import DataRequired, Length
 
 # -- GLOBALS
@@ -56,6 +57,28 @@ class DataEntryForm(FlaskForm):
                             validators=[DataRequired()])
     submit = SubmitField('Submit')
 
+class DataUpdateForm_returns(FlaskForm):
+    def_today = datetime.today()
+    is_returned = BooleanField('Returned?')
+    payout_value = StringField('Return Value', default="0,00€")
+    payout_date = DateField('Return Date', 
+                         format="%Y-%m-%d",
+                         default=def_today)
+    submit = SubmitField('Submit')
+
+class DataUpdateForm_all(FlaskForm):
+    def_today = datetime.today()
+    is_submitted = BooleanField('Submitted?')
+    submit_date = DateField('Submit Date', 
+                         format="%Y-%m-%d",
+                         default=def_today)
+    is_returned = BooleanField('Returned?')
+    payout_value = StringField('Return Value', default="0,00€")
+    payout_date = DateField('Return Date', 
+                         format="%Y-%m-%d",
+                         default=def_today)
+    submit = SubmitField('Submit')
+
 class Invoices(db.Model):
     __tablename__ = 'invoices'
     N = db.Column(db.Integer, primary_key=True)
@@ -66,8 +89,12 @@ class Invoices(db.Model):
     VALUE = db.Column(db.String)
     PAYDATE = db.Column(db.String)
     PATIENT = db.Column(db.String)
-    def __init__(self, HASH, DATE, ID, NAME, VALUE, PAYDATE, PATIENT):
-        #self.N = N
+    SUBMITTED = db.Column(db.String)
+    SUBDATE = db.Column(db.String)
+    RETURNED = db.Column(db.String)
+    RETVAL = db.Column(db.String)
+    RETDATE = db.Column(db.String)
+    def __init__(self, HASH, DATE, ID, NAME, VALUE, PAYDATE, PATIENT, SUBMITTED, SUBDATE, RETURNED, RETVAL, RETDATE):
         self.HASH = HASH
         self.DATE = DATE
         self.ID = ID
@@ -75,6 +102,11 @@ class Invoices(db.Model):
         self.VALUE = VALUE
         self.PAYDATE = PAYDATE
         self.PATIENT = PATIENT
+        self.SUBMITTED = SUBMITTED
+        self.SUBDATE = SUBDATE
+        self.RETURNED = RETURNED
+        self.RETVAL = RETVAL
+        self.RETDATE = RETDATE
 
 # -- Routes
 @app.route('/')
@@ -114,7 +146,12 @@ def putdata():
                           inv_name,
                           inv_value,
                           inv_paydate,
-                          inv_patient)#HASH, DATE, ID, NAME, VALUE, PAYDATE, PATIENT)
+                          inv_patient,
+                          "0",
+                          "---",
+                          "0",
+                          "0,00€",
+                          '---')#HASH, DATE, ID, NAME, VALUE, PAYDATE, PATIENT, SUBMITTED, SUBDATE, RETURNED, RETVAL, RETDATE)
         db.session.add(record)
         db.session.commit()
         # create a message to send to the template
@@ -125,3 +162,54 @@ def putdata():
 def getdata():
     invoices = db.session.execute(db.select(Invoices).order_by(Invoices.N)).scalars()
     return render_template("getdata.html", invoices=invoices)
+
+@app.route('/getentry/<thisN>', methods=['GET', 'POST'])
+def getentry(thisN):
+    invoice = db.session.execute(db.select(Invoices).filter_by(N=thisN)).scalar_one()
+    message = ""
+    if invoice.SUBMITTED == "0": # was already submitted, we present a slightly different form
+        form = DataUpdateForm_all()
+        if form.validate_on_submit():
+            if 'is_submitted' in request.form: # boolean field is only part of return if checked! <stupid>
+                is_submitted = "1"
+            else:
+                is_submited = "0"
+                #is_submitted = request.form['is_submitted']
+            submit_date = request.form['submit_date']
+            if 'is_returned' in request.form:
+                is_returned = "1"
+            else:
+                is_returned = "0"
+                # is_returned = request.form['is_returned']
+            payout_value = request.form['payout_value']
+            payout_date = request.form['payout_date']   
+            # SUBMITTED, SUBDATE, RETURNED, RETVAL, RETDATE)
+            db.session.execute(update(Invoices),[{"N": invoice.N,
+                                                    "SUBMITTED": is_submitted,
+                                                    "SUBDATE": submit_date,
+                                                    "RETURNED": is_returned,
+                                                    "RETVAL": payout_value,
+                                                    "RETDATE": payout_date}])
+            db.session.commit()
+            message = "UPDATED!"
+            # create a message to send to the template
+        return render_template("update.html", form=form, message=message, invoice=invoice)
+    else:
+        form = DataUpdateForm_returns()
+        if form.validate_on_submit():
+            if 'is_returned' in request.form:
+                is_returned = "1"
+            else:
+                is_returned = "0"
+                # is_returned = request.form['is_returned']
+            payout_value = request.form['payout_value']
+            payout_date = request.form['payout_date']
+            # RETURNED, RETVAL, RETDATE)
+            db.session.execute(update(Invoices),[{"N": invoice.N,
+                                                    "RETURNED": is_returned,
+                                                    "RETVAL": payout_value,
+                                                    "RETDATE": payout_date}])
+            db.session.commit()
+            message = "UPDATED!"
+            # create a message to send to the template   
+        return render_template("update.html", form=form, message=message, invoice=invoice)

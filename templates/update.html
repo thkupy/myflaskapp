@@ -1,0 +1,29 @@
+{% extends "baselayout.html" %}
+{% from 'bootstrap5/form.html' import render_form %}
+{% block title %}UPDATE RECORD{% endblock %}
+{% block content %}
+<h1>UPDATE</h1>
+{% if message %}
+<p class="lead"><strong>{{ message }}</strong></p>
+<p>Use Navbar!</p>
+{% else %}
+<div class="container">
+  <p>Patient: {{ invoice.PATIENT }}</p>
+  <p>Date: {{ invoice.DATE }}</p>
+  <p>ID: {{ invoice.ID }}</p>
+  <p>Name: {{ invoice.NAME }}</p>
+  <p>Value: {{ invoice.VALUE }}</p>
+  <p>Paydate: {{ invoice.PAYDATE }}</p>
+  {% if invoice.SUBMITTED == "1" %}
+  <p>Submitted on: {{ invoice.SUBDATE }}</p>
+  {% endif %}
+</div>
+<div class="container">
+  <div class="row">
+    <div class="col-md-10 col-lg-8 mx-lg-auto mx-md-auto">
+      {{ render_form(form) }}
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

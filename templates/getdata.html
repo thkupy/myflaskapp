@@ -7,27 +7,35 @@
   <table id="invoices" class="table table-striped">
   <thead>
     <tr>
-    <th scope="col">N</th>
+    <th scope="col">EDIT</th>
     <th scope="col">Patient</th>
     <th scope="col">In-Date</th>
     <th scope="col">ID</th>
     <th scope="col">Name</th>
     <th scope="col">Value</th>
     <th scope="col">Pay-Date</th>
-    <th scope="col">Hash</th>
+    <th scope="col">Sub.?</th>
+    <th scope="col">Sub.-Date</th>
+    <th scope="col">Ret.?</th>
+    <th scope="col">Retval</th>
+    <th scope="col">Retdate</th>
     </tr>
   </thead>
   <tbody>
   {% for invoice in invoices %}
   <tr>
-    <td>{{ invoice.N }}</td>
+    <td><a href="{{ url_for('getentry', thisN=invoice.N)}}">edit</a></td>
     <td>{{ invoice.PATIENT }}</td>
     <td>{{ invoice.DATE }}</td>
     <td>{{ invoice.ID }}</td>
     <td>{{ invoice.NAME }}</td>
     <td>{{ invoice.VALUE }}</td>
     <td>{{ invoice.PAYDATE }}</td>
-    <td>{{ invoice.HASH }}</td>
+    <td>{% if invoice.SUBMITTED == "1"%}&#9989;{% else %}&#10060;{% endif %}</td>
+    <td>{% if invoice.SUBMITTED == "1"%}{{ invoice.SUBDATE }}{% else %}&#9888;{% endif %}</td>
+    <td>{% if invoice.RETURNED == "1"%}&#9989;{% else %}&#10060;{% endif %}</td>
+    <td>{% if invoice.RETURNED == "1"%}{{ invoice.RETVAL }}{% else %}0,00€{% endif %}</td>
+    <td>{% if invoice.RETURNED == "1"%}{{ invoice.RETDATE }}{% else %}&#9888;{% endif %}</td>
   </tr>
   {% endfor %}
   </tbody>
